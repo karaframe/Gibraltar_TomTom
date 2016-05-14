@@ -9,9 +9,62 @@ library(raster)
 library(rgeos)
 library(lubridate)
 library(shinydashboard)
+library(BH)
+library(maptools)
 
-traffic_stationary <- read.csv("traffic_stationary_11May2016.csv")
+options(warn=-1)  # warnings OFF!
+
+traffic_stationary <- read.csv("traffic_stationary_until_11May2016.csv")
 traffic_realtime <- read.csv("traffic_realtime_05May2016.csv")
+
+# Load OpenStreed data (GeoJSON)
+OSM_GIB <- readOGR(".GIB_geojson_Open_Street", "OGRGeoJSON")
+
+###############################################################################
+# stationary traffic------------------------
+
+# make a spatial dataframe with traffic data 
+sp_traffic_staz <- SpatialPointsDataFrame(traffic_stationary[,40:41], traffic_stationary,            # lat, lon
+                                     proj4string=CRS("+init=epsg:4326")) 
+
+buffer_sp_traffic_staz <- rgeos::gBuffer(sp_traffic_staz, width=0.00015)  #0.00005
+gI_staz <- gIntersection(OSM_GIB, buffer_sp_traffic_staz,  byid=c(TRUE, TRUE))
+
+
+#################################################################################
+# Real time traffic flow--------------------
+
+# remove duplicates of lon & lat and sort latitude from big to small
+traffic_realtime <- traffic_realtime %>%
+  distinct(lat) 
+# remove traffic data with latitude == 36.1470043657 (point in the water)
+traffic_realtime <- traffic_realtime[traffic_realtime$lat!=36.1470043657487,]   
+# remove traffic data with latitude == 36.1470043657 (point before the border)
+traffic_realtime <- traffic_realtime[traffic_realtime$lat!=36.1560165880387,]   
+
+
+traffic_realtime <- traffic_realtime %>%
+  arrange(lat) %>%
+  arrange(lon)
+
+# make lines
+p1 = Line(traffic_realtime[,22:23]) #lon & lat
+# make Polygon class
+p2 = Lines(list(p1), ID = "drivetime")
+# make spatial polygons class
+traffic_lines = SpatialLines(list(p2),proj4string=CRS("+init=epsg:4326"))
+
+
+# make a spatial dataframe with traffic data 
+sp_traffic_real <- SpatialPointsDataFrame(traffic_realtime[,22:23], traffic_realtime,     # lat, lon
+                                     proj4string=CRS("+init=epsg:4326")) 
+
+
+buffer_sp_traffic_real <- rgeos::gBuffer(sp_traffic_real, width=0.00015)  #0.00005
+gI_real <- gIntersection(OSM_GIB, buffer_sp_traffic_real,  byid=c(TRUE, TRUE))
+
+
+#### shiny! #####################################################################
 
 
 shinyServer(function(input, output, session) {
@@ -74,13 +127,17 @@ width = 950
       addCircleMarkers(lng = ~lon, lat = ~lat, 
                        weight = 1, radius=5, color = 'black',
                        stroke = FALSE, fillOpacity = 1,
-                       label = ~as.character(traffic_stationary$averagespeed),
+                       label = ~as.character(traffic_stationary$abnormaltraffictype),
                        labelOptions = labelOptions(noHide = F),
-                       group = "speed (km/h)") %>%
+                       group = "traffic") %>%
+      addPolylines(data = gI_staz, color='red', group='Route',
+                   label = as.character(traffic_stationary$abnormaltraffictype),
+                   labelOptions = labelOptions(noHide = F)) %>%
       addLayersControl(
         baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
-        overlayGroups = c("speed (km/h)"),
-        options = layersControlOptions(collapsed = FALSE)) 
+        overlayGroups = c("Route", "traffic"),
+        options = layersControlOptions(collapsed = TRUE)) %>%
+      hideGroup(c("traffic"))
     
     map
   })
@@ -106,14 +163,18 @@ width = 950
         addCircleMarkers(lng = ~lon, lat = ~lat, 
                          weight = 1, radius=5, color = 'black',
                          stroke = FALSE, fillOpacity = 1,
-                         label = ~as.character(traffic_realtime$averagespeed),
+                         label = as.character(traffic_realtime$averagespeed),
                          labelOptions = labelOptions(noHide = F),
                          group = "speed (km/h)") %>%
+ #       addPolylines(data = traffic_lines, color='blue', weight = 2, group='Route') %>%
+        addPolylines(data = gI_real, color='blue', group='Nodes',
+                     label = as.character(traffic_realtime$informationstatus),
+                     labelOptions = labelOptions(noHide = F)) %>%
         addLayersControl(
           baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
-          overlayGroups = c("speed (km/h)"),
-          options = layersControlOptions(collapsed = FALSE)) 
-      
+          overlayGroups = c("speed (km/h)", "Nodes"),
+          options = layersControlOptions(collapsed = TRUE)) %>%
+        hideGroup(c("speed (km/h)"))
       map
     })
     
