@@ -53,9 +53,11 @@ traffic <- traffic[traffic$lat!=36.1560165880387,]
    arrange(lon)
 
 # load open street data (routes)
- dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair"
- OSM_GIB <- readOGR(dsn = dir, layer = "gibraltar_OSM")
- plot(OSM_GIB)
+#  dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair"
+#  OSM_GIB <- readOGR(dsn = dir, layer = "gibraltar_OSM")
+# read GeoJSON-------------------------------------------------------------
+OSM_GIB <- readOGR(".GIB_geojson_Open_Street", "OGRGeoJSON")
+plot(OSM_GIB)
   
 # # make polygon
 # p1 = Polygon(traffic[,22:23]) #lon & lat
@@ -125,11 +127,13 @@ map <- leaflet(data = traffic[,]) %>%
 #                    weight = 1, radius=5, color = 'black',
 #                    stroke = FALSE, fillOpacity = 1,
 #                    group = "intersects") %>%
-  addPolylines(data = gI, color="blue", group='intersects') %>%
+  addPolylines(data = gI, color="red", group='intersects',
+               label = as.character(traffic$informationstatus),
+               labelOptions = labelOptions(noHide = F)) %>%
   addLayersControl(
     baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
     overlayGroups = c("speed (km/h)", "Route", "OSM", "intersects"),
-    options = layersControlOptions(collapsed = FALSE)) %>%
+    options = layersControlOptions(collapsed = TRUE)) %>%
     hideGroup(c("OSM", "speed (km/h)", "Route"))
 
 map

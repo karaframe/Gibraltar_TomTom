@@ -11,6 +11,9 @@ library(lubridate)
 library(webshot)
 library(htmlwidgets)
 
+options(warn=-1) # warnings OFF
+# options(warn=0)  # warnings back ON!
+
 setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR")
 # setwd("C:/PostgreSQL_Gibraltair/OpenLR")
 
@@ -19,10 +22,22 @@ setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR")
 traffic <- read.csv("traffic_data_FK_until_11_May_2016.csv")  
 
 
-# load open street data (routes)
-dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair"
+# load shp file for open street data (routes)
+dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair/OpenLR"
 OSM_GIB <- readOGR(dsn = dir, layer = "gibraltar_OSM")
 plot(OSM_GIB)
+
+#### Write GeoJSON file for OSM_GIB ############################
+# ----- Write data to GeoJSON
+
+dat <-paste(dir, "/",  ".GIB_geojson_Open_Street", sep="") 
+
+####  ATT !!!!! erase existing .geojson file when re-runing code ######
+writeOGR(OSM_GIB, dat, layer="", driver="GeoJSON")  
+
+# read GeoJSON-------------------------------------------------------------
+OSM_GIB <- readOGR(".GIB_geojson_Open_Street", "OGRGeoJSON")
+
 
 ###################################################################################################
 
@@ -68,8 +83,6 @@ plot(gI)
 plot(gI, col=1:4, lwd=2, add=TRUE)
 
 
-
-
 # make a quick leaflet map with site loaction only
 
 # Marker + Static Label using custom label options
@@ -85,7 +98,9 @@ map <- leaflet(data = traffic[,]) %>%
                    label = ~as.character(traffic$abnormaltraffictype),
                    labelOptions = labelOptions(noHide = F),
                    group = "traffic") %>%
-  addPolylines(data = gI, color='blue', group='Route') %>%
+  addPolylines(data = gI, color='blue', group='Route',
+               label = as.character(traffic$abnormaltraffictype),
+               labelOptions = labelOptions(noHide = F)) %>%
 addLayersControl(
   baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
   overlayGroups = c("traffic", "Route"),
