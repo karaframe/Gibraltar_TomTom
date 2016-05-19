@@ -56,8 +56,9 @@ dbExistsTable(con, "traffic_flow")
 # rs <- dbSendQuery(con, "SELECT * FROM traffic_flow WHERE publicationtime BETWEEN '2016-05-07 00:14:30' AND '2016-05-10 23:58:30'")  
  
 # traffic flow
-rs <- dbSendQuery(con, "SELECT * FROM traffic_flow WHERE publicationtime BETWEEN '2016-05-07' AND '2016-05-08'")  
-rs <- dbSendQuery(con, "SELECT * FROM traffic_flow") # all available data
+# rs <- dbSendQuery(con, "SELECT * FROM traffic_flow WHERE publicationtime BETWEEN '2016-05-07' AND '2016-05-08'")  
+# rs <- dbSendQuery(con, "SELECT * FROM traffic_flow") # all available data
+rs <- dbSendQuery(con, "SELECT * FROM traffic_flow WHERE publicationtime BETWEEN '2016-05-18 23:00:00' AND '2016-05-19 07:00:00'")  
 
 # traffic data
 # rs <- dbSendQuery(con, "SELECT * FROM traffic_data WHERE publicationtime BETWEEN '2016-05-07' AND '2016-05-08'")
@@ -68,9 +69,13 @@ str(AAA)
 AAA
 
 # all available traffic flow data from 12 April 2016 till today 12 May
-write.csv(AAA, file= "traffic_flow_FK_until_11_May_2016.csv")
+# write.csv(AAA, file= "traffic_flow_FK_18May2016_5pm.csv")
+# write.csv(AAA, file= "traffic_flow_FK_18May2016_23pm.csv")
+# write.csv(AAA, file= "traffic_flow_FK_19May2016_7am.csv")
+
 # available traffic data from 12 April 2016 till today 12 May
-write.csv(AAA, file= "traffic_data_FK_until_11_May_2016.csv")
+# write.csv(AAA, file= "traffic_data_FK_until_11_May_2016.csv")
+write.csv(AAA, file= "traffic_data_FK_until_19_May_2016.csv")
 
 #############################################################################################################################
 setwd("C:/PostgreSQL_Gibraltair/OpenLR")
