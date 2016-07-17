@@ -16,12 +16,16 @@ options(warn=-1) # warnings OFF
 # options(warn=0)  # warnings back ON!
 
 # setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR")
-setwd("C:/PostgreSQL_Gibraltair/OpenLR")
+setwd("C:/PostgreSQL_Gibraltair/OpenLR/new_data")
 
 # load traffic data until 11 May 2016
 # these are stationary Traffic & queueing Traffic & low Traffic
 # traffic <- read.csv("traffic_data_FK_until_11_May_2016.csv")  
-traffic <- read.csv("traffic_data_FK_until_19_May_2016.csv") 
+# traffic <- read.csv("traffic_data_FK_until_19_May_2016.csv") 
+traffic <- read.csv("traffic_data_FK_14_15_June_2016.csv")
+# rename "elaborateddataid" into "ID"
+names(traffic)[names(traffic) == 'situationid'] <- 'ID'
+
 
 # load shp file for open street data (routes)
 # dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair/OpenLR"
@@ -43,26 +47,25 @@ plot(OSM_GIB)
 
 ###################################################################################################
 
-# POINTS_1st <- read.csv("points_traffic_data_1st_11_May.csv")[2:4]
-# POINTS_2nd <- read.csv("points_traffic_data_2nd_11_May.csv")[2:4]
-
-POINTS_1st <- read.csv("points_traffic_data_1st_19May2016.csv")[2:4]
-POINTS_2nd <- read.csv("points_traffic_data_2nd_19May2016.csv")[2:4]
+POINTS_1st <- read.csv("points_traffic_data_1st_14_15_June_2016.csv")[2:4]
+POINTS_2nd <- read.csv("points_traffic_data_2nd_14_15_June_2016.csv")[2:4]
 
 # Join traffic data (speed) first and second point
-# traffic <- cbind(traffic,POINTS)
-traffic_1st <- cbind(traffic,POINTS_1st)
-traffic_2nd <- cbind(traffic,POINTS_2nd)
+traffic_1st <- traffic %>%
+  left_join (POINTS_1st, "ID")
+
+traffic_2nd <- traffic %>%
+  left_join (POINTS_2nd, "ID")
 
 # bind 1st and 2nd point together
 traffic <- rbind(traffic_1st, traffic_2nd)
-write.csv(traffic, "traffic_stationary_until_19May2016.csv")
-traffic <- read.csv("traffic_stationary_until_19May2016.csv")
+write.csv(traffic, "traffic_stationary_14_15_June_2016.csv")
+traffic <- read.csv("traffic_stationary_14_15_June_2016.csv")
 
 
 # remove duplicates of lon & lat and sort latitude from big to small
 traffic <- traffic %>%
-  distinct(lon) 
+  distinct(lon, lat) 
 # remove traffic data with latitude == 36.1470043657 (point in the water)
 traffic <- traffic[traffic$lat!=36.1470043657487,]   
 # remove traffic data with latitude == 36.1470043657 (point before the border)
@@ -75,7 +78,7 @@ traffic <- traffic[traffic$averagespeed!=0,]
 # cut routes between points--------------------------------------------------
 
 # make a spatial dataframe with traffic data 
-sp_traffic <- SpatialPointsDataFrame(traffic[,40:41], traffic,            # lat, lon
+sp_traffic <- SpatialPointsDataFrame(traffic[,39:40], traffic,            # lat, lon
                                      proj4string=CRS("+init=epsg:4326")) 
 plot(sp_traffic)
 
@@ -105,7 +108,7 @@ popup_speed <- paste0("<p>Avg Speed", ": <strong> ", traffic$averagespeed, " </s
 
 # Marker + Static Label using custom label options
 map <- leaflet(data = traffic[,]) %>%
-  addTiles(group = "OSM (default)") %>%
+  addProviderTiles("Hydda.Full", group = "Hydda_Full") %>%
   addProviderTiles("OpenStreetMap.Mapnik", group = "Road map") %>%
   addProviderTiles("Thunderforest.Landscape", group = "Topographical") %>%
   addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
@@ -126,7 +129,7 @@ map <- leaflet(data = traffic[,]) %>%
     title = paste("<strong>Avg Speed Km/h:"),
     labFormat = labelFormat(prefix = ""), labels = "black", opacity = 1) %>%
 addLayersControl(
-  baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
+  baseGroups = c("Hydda_Full","Road map", "Topographical", "Satellite", "Toner Lite"),
   overlayGroups = c("Traffic Data", "Route"),
   options = layersControlOptions(collapsed = TRUE)) %>%
   hideGroup(c("Route"))

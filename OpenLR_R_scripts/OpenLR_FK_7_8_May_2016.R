@@ -43,8 +43,10 @@ traffic <- traffic %>%
             hour) %>%
 #            time) %>%
    summarise(AVG_Speed = mean(averagespeed, na.rm = TRUE))%>%
-  ungroup() %>%
-  arrange(hour) 
+  ungroup() 
+
+# %>%
+#   arrange(hour) 
 
 
 ############################################################################ 
@@ -221,13 +223,18 @@ write.csv(POINTS_2nd, "points_traffic_2nd_7_8_May.csv")
 POINTS_1st <- read.csv("points_traffic_1st_7_8_May.csv")[2:4]
 POINTS_2nd <- read.csv("points_traffic_2nd_7_8_May.csv")[2:4]
 
-# Join traffic data (speed) to spatial data
 # traffic <- cbind(traffic,POINTS)
 traffic_1st <- cbind(traffic,POINTS_1st)
 traffic_2nd <- cbind(traffic,POINTS_2nd)
 
 # bind 1st and 2nd point together
 traffic <- rbind(traffic_1st, traffic_2nd)
+
+# remove traffic data with latitude == 36.1470043657 (point in the water)
+traffic <- traffic[traffic$lat!=36.1470043657487,]   
+# remove traffic data with latitude == 36.1470043657 (point before the border)
+traffic <- traffic[traffic$lat!=36.1560165880387,]  
+traffic <- traffic[traffic$lat!=36.147002876331,] 
 traffic <- traffic %>%
   arrange(hour)
 
@@ -246,7 +253,7 @@ setwd("C:/PostgreSQL_Gibraltair/OpenLR/hours")
 # setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR/hours")
  
 # write a .csv file for each hour
-for (i in 0:22) {
+for (i in 0:23) {
 traffic_hour <- filter(traffic, hour == i)  # filter traffic data with hour == i
 write.csv(traffic_hour, paste(sprintf('traffic_h%02d',i), ".csv", sep = ""))
 
@@ -294,8 +301,114 @@ for (i in 0:22) {
 
 
 
-############################################################################################
-############################################################################################
+
+
+######################################################################################################
+######################################################################################################
+
+# Plot ONLY  traffic flow data (AVG speed) from TomTom data for each hour
+
+# define range for color scale base on average speed
+
+# MAX & MIN values for speed
+SPEED <- data.frame()
+for  (i in 0:23) { 
+  # traffic_hour <- read.csv(paste(sprintf("C:/RICARDO-AEA/postgreSQL_Gibraltair/OpenLR/hours/traffic_h%02d",i), ".csv", sep = ""))
+  traffic_hour <- read.csv(paste(sprintf("C:/postgreSQL_Gibraltair/OpenLR/hours/traffic_h%02d",i), ".csv", sep = ""))
+  SPEED <- rbind(SPEED, traffic_hour)
+}
+MAX_speed <- max(SPEED$AVG_Speed)  
+MIN_speed <- min(SPEED$AVG_Speed)
+
+
+# load shp file just generated with traffic points data for each hour and make Leaflet MAPS
+# for each hour
+
+for (i in 0:23) {
+  dir <-  paste0(sprintf("C:/postgreSQL_Gibraltair/OpenLR/hours/gibraltar_traffic_h%02d",i))
+  # dir <-  paste0(sprintf("C:/RICARDO-AEA/postgreSQL_Gibraltair/OpenLR/hours/gibraltar_traffic_h%02d",i))
+  sp_traffic_hour <- readOGR(dsn = dir, layer = "traffic_flow")
+  traffic_count <- nrow(sp_traffic_hour@data)
+  
+
+  pal_speed <- colorNumeric(c("#0000ff", "#ff0000"),
+                            c(MIN_speed, MAX_speed),na.color = "transparent")
+  
+  # popout average speed for each waypoint
+  popup_speed <- paste0("<p><strong>speed: </strong>", 
+                        sp_traffic_hour$AVG_Speed)    
+  
+
+  
+  "h1 {font-size: 40px;}"
+  content <- paste(sprintf('<h1><center><strong> hour %02d:00',i))
+  popup_info <- paste0(content, sp_traffic_hour$AVG_Speed)
+  
+  map <- leaflet() %>%
+    addTiles() %>% 
+   # setView(-5.35, 36.135, 14) %>%
+    setView(-5.355, 36.150, 16) %>%
+    addPopups(-5.345, 36.155, content,
+              options = popupOptions(closeButton = FALSE)) %>%
+    # Add tiles
+    addTiles(group = "OSM (default)") %>%
+    addProviderTiles("OpenStreetMap.Mapnik", group = "Road map") %>%
+    addProviderTiles("Thunderforest.Landscape", group = "Topographical") %>%
+    addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
+    addProviderTiles("Stamen.TonerLite", group = "Toner Lite") %>%
+    addCircles(lng=sp_traffic_hour$lon, lat=sp_traffic_hour$lat,  
+               popup= as.vector(popup_speed),
+               weight = 3, radius=13, 
+               color = pal_speed(sp_traffic_hour$AVG_Speed), stroke = FALSE, fillOpacity = 1,
+               group= "Position") %>%
+    addLegend("bottomright", pal = pal_speed, values = c(MIN_speed, MAX_speed),
+              title = "<strong>AVG Speed (km/h): </strong><br>",
+              labFormat = labelFormat(prefix = ""),
+              opacity = 1) %>%
+    addLayersControl(
+      baseGroups = c("Road map", "Topographical", "Satellite", "Toner Lite"),
+      overlayGroups = c("Position"),
+      options = layersControlOptions(collapsed = TRUE)) 
+
+  ## create a series of .png figures for each hour
+  saveWidget(map, 'gibraltar_TomTom.html', selfcontained = FALSE)
+  webshot('gibraltar_TomTom.html', file=sprintf('traffic_flow_h%02d.png', i), 
+          vwidth = 1300, vheight = 900, cliprect = 'viewport')
+  
+
+map
+
+}
+
+
+# to use with ImageMagik using the commnad line "cmd" in windows
+# convert -delay 120 -loop 0 *.png traffic_flow_Gibraltar_TomTom.gif
+
+###################### end ##############################################################
+########################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################################
+######################################################################################################
 
 # Plot traffic flow data (AVG speed) from TomTom data for each hour + average NO2 concentrations
   
@@ -417,6 +530,33 @@ map
 ########################################################################################
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##############################################################################################################

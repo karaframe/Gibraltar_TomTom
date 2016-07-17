@@ -11,17 +11,21 @@ library(lubridate)
 library(webshot)
 library(htmlwidgets)
 
-setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR")
-# setwd("C:/PostgreSQL_Gibraltair/OpenLR")
+# setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR")
+ setwd("C:/PostgreSQL_Gibraltair/OpenLR")
 
 # all data for 05 may 2016
-traffic <- read.csv("traffic_flow_5_May_2016.csv")  
+# traffic <- read.csv("traffic_flow_5_May_2016.csv") 
+traffic <- read.csv("traffic_flow_FK_18May2016_5pm.csv")
 
 #########################################################################################
 #########################################################################################
 
-POINTS_1st <- read.csv("points_traffic_flow_1st_05_May.csv")[2:4]
-POINTS_2nd <- read.csv("points_traffic_flow_2nd_05_May.csv")[2:4]
+# POINTS_1st <- read.csv("points_traffic_flow_1st_05_May.csv")[2:4]
+# POINTS_2nd <- read.csv("points_traffic_flow_2nd_05_May.csv")[2:4]
+
+POINTS_1st <- read.csv("points_traffic_flow_1st_18May2016_5pm.csv")[2:4]
+POINTS_2nd <- read.csv("points_traffic_flow_2nd_18May2016_5pm.csv")[2:4]
 
 
 # Join traffic data (speed) to spatial data
@@ -34,9 +38,9 @@ write.csv(traffic, "traffic_realtime_05May2016.csv")
 traffic <- read.csv("traffic_realtime_05May2016.csv")
 
 
-# # pair of points
+# pair of points
 # POINTS <- read.csv("points_traffic_flow_05_May.csv")
-# # Join traffic data (speed) to spatial data
+# Join traffic data (speed) to spatial data
 # traffic <- cbind(traffic,POINTS)
 
 
@@ -94,7 +98,7 @@ plot(traffic_lines)
 # colnames(Inter) <- c("Lon", "Lat")
 
 
-buffer_sp_traffic <- rgeos::gBuffer(sp_traffic, width=0.0001)  #0.00005
+buffer_sp_traffic <- rgeos::gBuffer(sp_traffic, width=0.00015)  #0.00005
 plot(sp_traffic)
 plot(buffer_sp_traffic, add = TRUE)
 gI <- gIntersection(OSM_GIB, buffer_sp_traffic,  byid=c(TRUE, TRUE))
@@ -127,7 +131,7 @@ map <- leaflet(data = traffic[,]) %>%
 #                    weight = 1, radius=5, color = 'black',
 #                    stroke = FALSE, fillOpacity = 1,
 #                    group = "intersects") %>%
-  addPolylines(data = gI, color="red", group='intersects',
+  addPolylines(data = gI, color="blue", group='intersects',
                label = as.character(traffic$informationstatus),
                labelOptions = labelOptions(noHide = F)) %>%
   addLayersControl(
