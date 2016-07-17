@@ -16,7 +16,7 @@ library(ggplot2)
 
 options(warn=-1)  # warnings OFF!
 
-# setwd("C:/RICARDO-AEA/PostgreSQL_Gibraltair/OpenLR/shiny_Gibraltar")
+# setwd("C:/PostgreSQL_Gibraltair/OpenLR/shiny_Gibraltar")
 traffic_stationary <- read.csv("traffic_stationary_until_19May2016.csv")
 traffic_realtime <- read.csv("traffic_realtime_18_19May2016.csv")
 
@@ -58,16 +58,16 @@ traffic_realtime <- traffic_realtime[traffic_realtime$lat!=36.1560165880387,]
 traffic_realtime <- traffic_realtime[traffic_realtime$lat!=36.147002876331,]  
 traffic_realtime <- traffic_realtime[traffic_realtime$averagespeed!=0,] 
 
-traffic_realtime <- traffic_realtime %>%
-  arrange(lat) %>%
-  arrange(lon)
-
-# make lines
-p1 = Line(traffic_realtime[,22:23]) #lon & lat
-# make Polygon class
-p2 = Lines(list(p1), ID = "drivetime")
-# make spatial polygons class
-traffic_lines = SpatialLines(list(p2),proj4string=CRS("+init=epsg:4326"))
+# traffic_realtime <- traffic_realtime %>%
+#   arrange(lat) %>%
+#   arrange(lon)
+# 
+# # make lines
+# p1 = Line(traffic_realtime[,22:23]) #lon & lat
+# # make Polygon class
+# p2 = Lines(list(p1), ID = "drivetime")
+# # make spatial polygons class
+# traffic_lines = SpatialLines(list(p2),proj4string=CRS("+init=epsg:4326"))
 
 
 # make a spatial dataframe with traffic data 
@@ -76,7 +76,7 @@ sp_traffic_real <- SpatialPointsDataFrame(traffic_realtime[,22:23], traffic_real
 
 # plot(sp_traffic_real)
 # plot(sp_traffic_staz, add=TRUE, lwd=1, col = "red")
-
+# make intersection between open street and the buffer
 buffer_sp_traffic_real <- rgeos::gBuffer(sp_traffic_real, width=0.00015)  #0.00005
 gI_real <- gIntersection(OSM_GIB, buffer_sp_traffic_real,  byid=c(TRUE, TRUE))
 # plot(gI_real)
