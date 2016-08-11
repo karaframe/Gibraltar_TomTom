@@ -28,7 +28,7 @@ OSM_GIB <- readOGR(".GIB_geojson_Open_Street", "OGRGeoJSON")
 
 # remove duplicates of lon & lat and sort latitude from big to small
 traffic_stationary <- traffic_stationary %>%
-  distinct(lon) 
+  distinct(lat, lon, .keep_all = TRUE) 
 # remove traffic data with latitude == 36.1470043657 (point in the water)
 traffic_stationary <- traffic_stationary[traffic_stationary$lat!=36.1470043657487,]   
 # remove traffic data with latitude == 36.1470043657 (point before the border)
@@ -50,7 +50,7 @@ gI_staz <- gIntersection(OSM_GIB, buffer_sp_traffic_staz,  byid=c(TRUE, TRUE))
 
 # remove duplicates of lon & lat and sort latitude from big to small
 traffic_realtime <- traffic_realtime %>%
-  distinct(lat) 
+  distinct(lat, lon, .keep_all = TRUE) 
 # remove traffic data with latitude == 36.1470043657 (point in the water)
 traffic_realtime <- traffic_realtime[traffic_realtime$lat!=36.1470043657487,]   
 # remove traffic data with latitude == 36.1470043657 (point before the border)
@@ -256,8 +256,6 @@ popup_speed <- paste0("<p>Avg Speed", ": <strong> ", traffic_realtime$averagespe
 
     
       output$percentage <- renderInfoBox({
-
-        
         if(input$goButton==0)
         return(
           infoBox(           
