@@ -29,17 +29,18 @@ names(traffic)[names(traffic) == 'situationid'] <- 'ID'
 
 # load shp file for open street data (routes)
 # dir <-  "C:/RICARDO-AEA/postgreSQL_Gibraltair/OpenLR"
-# dir <-  "C:/postgreSQL_Gibraltair/OpenLR"
+# dir <-  "C:/PostgreSQL_Gibraltair/OpenLR"
+
 # OSM_GIB <- readOGR(dsn = dir, layer = "gibraltar_OSM")
 # plot(OSM_GIB)
 
 #### Write GeoJSON file for OSM_GIB ############################
 # ----- Write data to GeoJSON
 
-dat <-paste(dir, "/",  ".GIB_geojson_Open_Street", sep="") 
+# dat <-paste(dir, "/",  ".GIB_geojson_Open_Street", sep="") 
 
 ####  ATT !!!!! erase existing .geojson file when re-runing code ######
-writeOGR(OSM_GIB, dat, layer="", driver="GeoJSON")  
+# writeOGR(OSM_GIB, dat, layer="", driver="GeoJSON")  
 
 # read GeoJSON-------------------------------------------------------------
 OSM_GIB <- readOGR(".GIB_geojson_Open_Street", "OGRGeoJSON")
