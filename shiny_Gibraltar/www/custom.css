@@ -1,0 +1,12 @@
+nav{ background: url('Ricardo-EE-Logo.jpg') no-repeat right center; background-size: 220px 60px; }
+.shiny-progress .progress-text {
+  position: center;
+  right: 100px;
+  height: 50px;
+  width: 300px;
+  background-color: #ffff84;
+  margin: 300px;
+  padding: 2px 3px;
+  opacity: 0.85;
+  font-size: 18px;
+}

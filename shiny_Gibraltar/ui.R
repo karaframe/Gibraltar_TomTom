@@ -11,6 +11,7 @@ library(rgeos)
 library(lubridate)
 library(BH)
 
+jscode <- "shinyjs.refresh = function() { history.go(0); }"
 
 ui <- dashboardPage(
   skin = "green",
@@ -19,26 +20,30 @@ ui <- dashboardPage(
     " ",
     sidebarMenu(
       menuItem(
-        "Traffic Flow (speed)", tabName = "Real", icon = icon("dashboard")
+        "Stationary Speed (static)", tabName = "Stationary", icon = icon("dashboard")
       ),
       menuItem(
-        "Traffic Data (speed)", tabName = "Stationary", icon = icon("dashboard")
+        "Traffic Speed (static)", tabName = "Real", icon = icon("dashboard")
       ),
 #       menuItem(
 #         "Hourly averaged data", tabName = "Averaged", icon = icon("th")
 #       ),
+     menuItem(
+        "Stationary Speed (animation)", tabName = "Animated_Traffic_Data", icon = icon("car")
+       ),
       menuItem(
-        "Hourly Traffic Flow", tabName = "Animated_Traffic_Flow", icon = icon("car")
-      ),
-      menuItem(
-        "Hourly Traffic Data", tabName = "Animated_Traffic_Data", icon = icon("car")
+        "Traffic Speed (animation)", tabName = "Animated_Traffic_Flow", icon = icon("car")
       )
     )
   ),
   
   
   
-  dashboardBody(tabItems(
+  dashboardBody(
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    ),
+    tabItems(
     # First tab content
     tabItem(tabName = "Animated_Traffic_Flow",
             

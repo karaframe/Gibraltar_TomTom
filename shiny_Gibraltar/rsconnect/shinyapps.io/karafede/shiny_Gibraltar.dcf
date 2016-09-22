@@ -1,8 +1,7 @@
 name: shiny_Gibraltar
 account: karafede
 server: shinyapps.io
-bundleId: 470355
+appId: 100913
+bundleId: 564844
 url: https://karafede.shinyapps.io/shiny_Gibraltar/
-when: 1464946993.96697
-asMultiple: FALSE
-asStatic: FALSE
+when: 1474535299.2442
