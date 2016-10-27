@@ -42,21 +42,23 @@ traffic$time <- str_sub(traffic$publicationtime, start = 1, end = -10)
 # traffic <- traffic %>%
 #   mutate(date = ymd_hms(publicationtime, tz = "UTC"),
 #          hour = hour(date),
-#          date = date)%>% 
+#          date = date)%>%
 #   group_by(elaborateddataid,
 #            openlrbinary,
 #            hour,
 #            time) %>%
 #   summarise(AVG_Speed = mean(averagespeed, na.rm = TRUE))%>%
 #   ungroup() %>%
-#   arrange(hour) 
+#   arrange(hour)
 
 
 
 traffic <- traffic %>%
   mutate(date = ymd_hms(publicationtime, tz = "UTC"),
          hour = hour(date),
-         date = date)%>% 
+         date = date,
+         minute = minute(date))%>% 
+  
   group_by(elaborateddataid,
            openlrbinary,
            hour) %>%
@@ -149,7 +151,7 @@ NO2_GIB <- NO2_GIB %>%
 
 # add lat & lon to AQ data in Gibraltar 
 NO2_GIB <- NO2_GIB %>%
-   left_join(info_sites_GIB, "site") 
+   left_join(info_sites_GIB, "date" , "site") 
  NO2_GIB <- as.data.frame(NO2_GIB)
  
 

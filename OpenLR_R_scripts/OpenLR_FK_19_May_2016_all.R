@@ -66,7 +66,7 @@ traffic <- read.csv("traffic_realtime_18_19May2016.csv")
 
 # remove duplicates of lon & lat and sort latitude from big to small
 traffic <- traffic %>%
-  distinct(lat) 
+  distinct(lon, lat, .keep_all = TRUE) 
 # remove traffic data with latitude == 36.1470043657 (point in the water)
 traffic <- traffic[traffic$lat!=36.1470043657487,]   
 # remove traffic data with latitude == 36.1470043657 (point before the border)

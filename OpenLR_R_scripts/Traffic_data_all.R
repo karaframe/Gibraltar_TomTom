@@ -62,7 +62,7 @@ traffic <- read.csv("traffic_stationary_until_19May2016.csv")
 
 # remove duplicates of lon & lat and sort latitude from big to small
 traffic <- traffic %>%
-  distinct(lon) 
+  distinct(lon, lat, .keep_all = TRUE) 
 # remove traffic data with latitude == 36.1470043657 (point in the water)
 traffic <- traffic[traffic$lat!=36.1470043657487,]   
 # remove traffic data with latitude == 36.1470043657 (point before the border)
@@ -77,10 +77,11 @@ traffic <- traffic[traffic$averagespeed!=0,]
 # make a spatial dataframe with traffic data 
 sp_traffic <- SpatialPointsDataFrame(traffic[,40:41], traffic,            # lat, lon
                                      proj4string=CRS("+init=epsg:4326")) 
+
 plot(sp_traffic)
 
 # build buffer around each point
-buffer_sp_traffic <- rgeos::gBuffer(sp_traffic, width=0.00015)  #0.00005
+buffer_sp_traffic <- rgeos::gBuffer(sp_traffic, width=0.0005)  #0.00005
 plot(sp_traffic)
 plot(buffer_sp_traffic, add = TRUE)
 # intersect traffic points with buffer
